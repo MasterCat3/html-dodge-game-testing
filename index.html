@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<!-- If the game is too fast or too slow for you, just change the gameSpeed variable at the beginning of the <script> tag -->
+
+
+<!--
+    Released on: April 30th 2017
+    Last Updated: September 18th 2019
+    Improvements made since release: (
+        Made logo shorter
+        Made the x position of the player reset itself after the "Retry" button is pressed
+        Made "how" text more clear
+        Added a gameSpeed variable to make it easier to adjust the game speed
+        Added a scores page
+        Fixed button collisions
+        Added variable to control how many red blocks there can be
+        Added new game controls section
+    )
+    Reason I made this: I had just designed an HTML menu similar to this that I liked, And I felt like making a game, And a dodge game didn't seem too hard.
+    
+    Tested in Firefox, Safari, and Chrome
+-->
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HTML Dodge Game</title>
+    </head>
+    
+    <body>
+        <canvas id="canvas" width="550" height="550"></canvas>
+        <script>
+         
+            
+            // Setting Up Canvas with Javascript
+            {
+                var canvas = document.getElementById("canvas");
+                canvas.width = window.innerWidth * 0.98;
+                canvas.height = window.innerHeight * 0.98;
+                var ctx = canvas.getContext("2d");
+                var width = canvas.getAttribute("width");
+                var height = canvas.getAttribute("height");
+                var setBackgroundColor = function(color) {
+                    var fillStyle = ctx.fillStyle;
+                    ctx.fillStyle = color;
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.fillStyle = fillStyle;
+                };
+                var rangedRandom = function(low, high) {
+                    return Math.random() * (high - low) + low;
+                };
+               
+                var circle = function(x, y, radius, fill) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    if(fill) ctx.fill();
+                    else ctx.stroke();
+                };
+                var color = function(r, g, b, a) {
+                    if(a === undefined) {
+                        return "rgb(" + r + "," + g + "," + b + ")";
+                    }
+                    else {
+                        return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+                    }
+                };
+                var Vector = function(xpos, ypos) {
+                    this.x = xpos;
+                    this.y = ypos;
+                };
+                
+                // Key Game Variables
+            var initialNumberOfBlocks = Math.round(canvas.width/100 * 1.7);  // The inital number of blocks
+            
+            var gameSpeed = 6; // Change this to make the game run faster or slower
+            var numberOfBlocks = initialNumberOfBlocks; //This sets the maximum number of blocks that can be around at the same time (More is harder)
+                
+            
+            
+            }; 
+            
+            // Set of useful functions
+            
+            var Button = function(x, y, txt, color, txtcolor) {
+                this.x = x;
+                this.y = y;
+                this.txt = txt;
+                this.color = color;
+                this.txtcolor = txtcolor;
+                this.width = txt.length * 10;
+                this.height = 41;
+                
+                this.draw = function() {
+                    ctx.save();
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x-this.width+(this.txt.length*5), this.y-this.height, this.width, this.height);
+                    ctx.font = "20px sans-serif";
+                    ctx.fillStyle = this.txtcolor;
+                    ctx.fillText(this.txt, this.x-(this.width/2)+(this.txt.length*5), this.y-(this.height/2));
+                    ctx.restore();
+                };
+                this.mouseIsInside = function(event) {
+                    if(event.clientX >= (this.x-(this.width/2)) && event.clientX <= (this.x-(this.width/2) + this.width) && event.clientY >= (this.y-this.height) && event.clientY <= this.y) {
+                        return true;
+                    }
+                    return false;
+                };
+            };
+            
+            //Function to interpret and use user input for game speed
+            var setGameSpeed = function() {
+                var returnValue = parseInt(prompt("Please enter a number between 3 and 25 to set the speed of the game (The default is 6) ", 6));
+                  if (returnValue < 3 || returnValue > 25) {
+                    alert("Your number is outside the specified range of 3 to 25. Please try again.");
+                } else if (returnValue >= 3 && returnValue <= 25) {
+                    gameSpeed = returnValue;
+                    alert("Game speed set.");
+                } else {
+                    alert("Invalid input. Please try again.");
+                };
+            };
+            
+            // Function to interpret and use user input for number of blocks
+            var setNumberOfBlocks = function() {
+                var returnValue = parseInt(prompt("Please enter a number between 3 and 60 to set the maximum number of red blocks at a time (The default is 25) ", "25"));
+                if (returnValue < 3 || returnValue > 60) {
+                    alert("Your number is outside the specified range of 3 to 60. Please try again.");
+                } else if (returnValue >= 3 && returnValue <= 60) {
+                    numberOfBlocks = returnValue;
+                    alert("Number Of Blocks has been set to " + numberOfBlocks);
+                    redBlocks = [];
+                    for (var i = 0; i < numberOfBlocks; i++) {
+                        redBlocks.push(new Vector(-50, height));
+                    }
+                } else {
+                    alert("Invalid input. Please try again.");
+                };
+                
+                
+                
+                
+                
+                
+                
+            };
+            
+            
+            // Code to detect if the mouse is down or up
+            var mouseIsDown = false;
+
+            
+            // A few buttons
+            var playButton = new Button(width/2, height/2 - 50, "  Play  ", "blue", "orange");
+            var howButton = new Button(width/2, height/2 + 50, "   How  ", "blue", "orange");
+            var gameControlsButton = new Button(width/2, height/2 + 150 , " Game Controls ", "blue", "orange");
+            var backButton = new Button(60, 500, "  Back  ", "blue", "orange");
+            var retryButton = new Button(60, height-50, "  Retry  ", "blue", "orange");
+            var backButtonFromLoseScreen = new Button(60, height-125, "  Back  ", "blue", "orange");
+            
+            var gameSpeedButton = new Button(width/2, height/2, "  Game Speed  ", "blue", "orange");
+            var numberOfBlocksButton = new Button(width/2, height/2 + 100, "  Number Of Blocks  ", "blue", "orange");
+            
+            // Game variables
+            var redBlocks = [];
+            for(var i = 0; i < numberOfBlocks; i++) {
+                redBlocks.push(new Vector(-50, height));
+            };
+            var highScores = [
+                ["Happy Snowman", 134, 5, 20],
+                ["ABoss", 23, 5],
+                ["Henwill8", 72, 5],
+                ["Vader2003", 100, 5]
+            ];
+            highScores.sort(function(a, b) {return b[1] - a[1]});
+            var scene = "logo";
+            var now = new Date().getTime();
+            var score = 0;
+            var keysPressed = [];
+            var player = {
+                x: width/2,
+                draw: function() {
+                    ctx.save();
+                    ctx.fillStyle = "blue";
+                    ctx.fillRect(this.x-40, height-40, 40, 40);
+                    ctx.restore();
+                },
+            };
+            
+            // Scenes
+            var logoProgress = 0;
+            var scenes = {
+                logo: function() {
+                    ctx.save();
+                    setBackgroundColor(0, 0, 0);
+                    ctx.font = "40px serif";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = color(255, 0, 255);
+                    ctx.fillText("MasterCat3", width/2, height/2);
+                    ctx.fillText("Presents...", width/2, height/2+50);
+                    logoProgress++;
+                    if(logoProgress > 120) {
+                        scene = "menu";
+                    }
+                    ctx.restore();
+                },
+                menu: function() {
+                    setBackgroundColor(color(255, 69, 69));
+                    ctx.save();
+                    ctx.font = "30px cursive";
+                    ctx.fillStyle = "black";
+                    ctx.textAlign = "center";
+                    ctx.fillText("HTML Dodge Game", width/2, 50);
+                    ctx.save();
+                    playButton.draw();
+                    howButton.draw();
+                    gameControlsButton.draw();
+                    ctx.restore();
+                },
+                play: function() {
+                    ctx.save();
+                    ctx.textAlign = "center";
+                    ctx.font = "30px sans-serif";
+                    setBackgroundColor(color(0, 0, 0));
+                    for(var i = 0; i < redBlocks.length; i++) {
+                        ctx.save();
+                        ctx.fillStyle = "red";
+                        redBlocks[i].y += gameSpeed;
+                        if(redBlocks[i].y > height) {
+                            redBlocks[i].x = rangedRandom(0, width);
+                            redBlocks[i].y = rangedRandom(-500, 0);
+                        }
+                        if(redBlocks[i].y >= height-40 && redBlocks[i].x >= player.x-40 && redBlocks[i].y <= height && redBlocks[i].x <= player.x+40) {
+                            scene = "lose";
+                        }
+                        
+                        ctx.fillRect(redBlocks[i].x-40, redBlocks[i].y-40, 40, 40);
+                        ctx.restore();
+                    }
+                    
+                    if(keysPressed[37]) {
+                        if(player.x < 0) {
+                            player.x = width;
+                        }
+                        else {
+                            player.x -= gameSpeed;
+                        }
+                    }
+                    if(keysPressed[39]) {
+                        if(player.x > width) {
+                            player.x = 40;
+                        } else {
+                            player.x += gameSpeed;
+                        }
+                    };
+                    
+                    if(new Date().getTime() >= now + 1000) {
+                        now = new Date().getTime();
+                        score += gameSpeed/5;
+                    }
+                    player.draw();
+                    ctx.restore();
+                },
+                how: function() {
+                    ctx.save();
+                    ctx.textAlign = "center";
+                    ctx.font = "13px sans-serif";
+                    setBackgroundColor(color(255, 69, 69));
+                    ctx.fillStyle = "black";
+                    ctx.fillText("You are the blue block. Move", width/2, height/2);
+                    ctx.fillText("around with the arrow keys", width/2, height/2+50);
+                    ctx.fillText("and try to avoid the red blocks.", width/2, height/2+100);
+                    ctx.save();
+                    backButton.draw();
+                    ctx.restore();
+                },
+                lose: function() {
+                    ctx.save();
+                    ctx.textAlign = "center";
+                    setBackgroundColor(color(255, 69, 69));
+                    var fontSize = initialNumberOfBlocks*2;
+                    if(fontSize > 35) {fontSize = 35};
+                    ctx.font = fontSize + "px sans-serif";
+                    ctx.save();
+                    ctx.translate(0, -150);
+                    ctx.fillText("A red block fell on your head and", width/2, height/2);
+                    ctx.fillText("you never wanted to dodge red blocks", width/2, height/2 + fontSize*1.25);
+                    ctx.fillText("again. At least not until you clicked", width/2, height/2+fontSize*2.5);
+                    ctx.fillText("that retry button...", width/2, height/2+fontSize*3.5);
+                    ctx.fillText("Your score: " + Math.round(score), width/2, height/2+fontSize*4.5);
+                    ctx.fillText("You played the game at a speed of " + gameSpeed, width/2, height/2+fontSize*5.5)
+                    ctx.fillText(" and with " + numberOfBlocks + " blocks.", width/2, height/2+fontSize*6.5)
+                    ctx.restore();
+                    retryButton.draw();
+                    backButtonFromLoseScreen.draw();
+                    ctx.restore();
+                },
+                gameControls: function() {
+                    // Temporary Debug Code
+                    ctx.fillStyle = "blue"; ctx.font = "30px sans-serif"; ctx.fillText(numberOfBlocks, 100, 100);
+                    ctx.save();
+                    setBackgroundColor(color(255, 69, 69));
+                    gameSpeedButton.draw();
+                    numberOfBlocksButton.draw();
+                    backButton.draw();
+                    ctx.restore();
+                    
+                },
+            };
+            
+            
+            // Code to be run 60 times per seconds(Or as many FPS as the device allows)
+            var draw = function() {
+                scenes[scene]();
+                requestAnimationFrame(draw);
+            };
+            requestAnimationFrame(draw);
+
+            
+            //Handling Mouse controls
+            canvas.addEventListener("mousedown", function() {
+                mouseIsDown = true;
+            });
+            canvas.addEventListener("mouseup", function() {
+                mouseIsDown = false;
+            });
+            canvas.addEventListener("mousemove", function(event) {
+                if(mouseIsDown) {
+                    player.x = event.clientX;
+                };
+            });
+            
+            //Handling Touch Events(experimental)
+            canvas.addEventListener("touchstart", function(event) {
+                if (scene === "play") {
+                    player.x = event.changedTouches[0].clientX;
+                    event.preventDefault();
+                };
+            });
+            canvas.addEventListener("touchmove", function(event) {
+                if (scene === "play") {
+                    player.x = event.changedTouches[0].clientX;
+                    event.preventDefault();
+                };
+            });
+            
+            
+            // Handing button collisions
+            canvas.addEventListener("click", function(event) {
+                    if(scene === "menu") {
+                        if(playButton.mouseIsInside(event)) {
+                            scene = "play";
+                        } else if(howButton.mouseIsInside(event)) {
+                            scene = "how";
+                        } else if(gameControlsButton.mouseIsInside(event)) {
+                            scene = "gameControls"
+                        }
+                    } else if(scene === "how") {
+                        if(backButton.mouseIsInside(event)) {
+                            scene = "menu";
+                        }
+                    } else if(scene === "lose") {
+                        if(retryButton.mouseIsInside(event)) {
+                            score = 0;
+                            player.x = width/2;
+                            for(var i = 0; i < redBlocks.length; i++) {
+                                redBlocks[i].x = -50;
+                                redBlocks[i].y = height;
+                            }
+                            scene = "play";
+                        } else if(backButtonFromLoseScreen.mouseIsInside(event)) {
+                            score = 0;
+                            player.x = width/2;
+                            for(var i = 0; i < redBlocks.length; i++) {
+                                redBlocks[i].x = -50;
+                                redBlocks[i].y = height;
+                            }
+                            scene = "menu";
+                        }
+                    }  else if (scene === "gameControls") {
+                        if(backButton.mouseIsInside(event)) {
+                            scene = "menu";
+                        } else if (gameSpeedButton.mouseIsInside(event)) {
+                            setGameSpeed();
+                        } else if (numberOfBlocksButton.mouseIsInside(event)) {
+                            setNumberOfBlocks();
+                        }
+                        
+                            
+                    };
+            });
+            
+            
+            
+            // Handling key presses
+            document.addEventListener("keydown", function(event) {
+                keysPressed[event.keyCode] = true;
+            });
+            document.addEventListener("keyup", function(event) {
+                keysPressed[event.keyCode] = false;
+            });
+        </script>
+    </body>
+</html>
