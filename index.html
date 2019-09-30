@@ -5,7 +5,7 @@
 
 <!--
     Released on: April 30th 2017
-    Last Updated: September 29th 2019
+    Last Updated: September 25th 2019
     Improvements made since release: (
         Made logo shorter
         Made the x position of the player reset itself after the "Retry" button is pressed
@@ -25,13 +25,15 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="apple-touch-icon-precomposed" href="apple-touch-favicon.png">
+        <link rel="icon" href="favicon.ico">
         <title>HTML Dodge Game</title>
     </head>
     
     <body>
         <canvas id="canvas" width="550" height="550"></canvas>
         <script>
-            
+         
             
             // Setting Up Canvas with Javascript
             {
@@ -81,15 +83,22 @@
             }; 
             
             // Set of useful functions
-            
-            var Button = function(x, y, txt, color, txtcolor) {
+            var Button = function(x, y, txt, color, txtcolor, buttonHeight, buttonWidth) {
                 this.x = x;
                 this.y = y;
                 this.txt = txt;
                 this.color = color;
                 this.txtcolor = txtcolor;
-                this.width = txt.length * 10;
-                this.height = 41;
+                if(buttonWidth === undefined) {
+                    this.width = txt.length * 10;
+                } else {
+                    this.width = buttonWidth;
+                };
+                if(buttonHeight === undefined) {
+                    this.height = 41;
+                } else {
+                    this.height = buttonHeight;
+                };
                 
                 this.draw = function() {
                     ctx.save();
@@ -107,6 +116,10 @@
                     }
                     return false;
                 };
+            };
+            
+            var createLevelButton = function(number, x, y) {
+                return new Button(x, y, number, "blue", "orange", 35, 35);
             };
             
             //Function to interpret and use user input for game speed
@@ -147,19 +160,31 @@
             };
             
             
+            
             // Code to detect if the mouse is down or up
             var mouseIsDown = false;
+
             
             // A few buttons
-            var playButton = new Button(width/2, height/2 - 50, "  Play  ", "blue", "orange");
-            var howButton = new Button(width/2, height/2 + 50, "   How  ", "blue", "orange");
-            var gameControlsButton = new Button(width/2, height/2 + 150 , " Game Controls ", "blue", "orange");
-            var backButton = new Button(60, 500, "  Back  ", "blue", "orange");
+            var playButton = new Button(width/2, height/2 - 110, "  Play  ", "blue", "orange");
+            var levelsButton = new Button(width/2, height/2 - 10, "  Levels  ", "blue", "orange");
+            var howButton = new Button(width/2, height/2 + 90, "   How  ", "blue", "orange");
+            var gameControlsButton = new Button(width/2, height/2 + 190 , " Game Controls ", "blue", "orange");
+            var backButton = new Button(60, height-50, "  Back  ", "blue", "orange");
             var retryButton = new Button(60, height-50, "  Retry  ", "blue", "orange");
             var backButtonFromLoseScreen = new Button(60, height-125, "  Back  ", "blue", "orange");
-            
-            var gameSpeedButton = new Button(width/2, height/2, "  Game Speed  ", "blue", "orange");
+             var gameSpeedButton = new Button(width/2, height/2, "  Game Speed  ", "blue", "orange");
             var numberOfBlocksButton = new Button(width/2, height/2 + 100, "  Number Of Blocks  ", "blue", "orange");
+            
+            var levelOneButton = createLevelButton("1", width/2 - 70, height/2 - 70);
+            var levelTwoButton = createLevelButton("2", width/2, height/2 - 70);
+            var levelThreeButton = createLevelButton("3", width/2 + 70, height/2 - 70);
+            var levelFourButton = createLevelButton("4", width/2 - 70, height/2);
+            var levelFiveButton = createLevelButton("5", width/2, height/2);
+            var levelSixButton = createLevelButton("6", width/2 + 70, height/2);
+            var levelSevenButton = createLevelButton("7", width/2 - 70, height/2 + 70);
+            var levelEightButton = createLevelButton("8", width/2, height/2 + 70);
+            var levelNineButton = createLevelButton("9", width/2 + 70, height/2 + 70);
             
             // Game variables
             var redBlocks = [];
@@ -187,6 +212,8 @@
                 },
             };
             
+            var level = 0;
+            
             // Scenes
             var logoProgress = 0;
             var scenes = {
@@ -207,14 +234,21 @@
                 menu: function() {
                     setBackgroundColor(color(255, 69, 69));
                     ctx.save();
-                    ctx.font = "30px cursive";
                     ctx.fillStyle = "black";
                     ctx.textAlign = "center";
-                    ctx.fillText("HTML Dodge Game", width/2, 50);
+                    if(width < 320 || height < 447) {
+                        ctx.font = "15px cursive";
+                        var titleTextX = 20;
+                    } else {
+                        ctx.font = "30px cursive";
+                        var titleTextX = 50;
+                    };
+                    ctx.fillText("HTML Dodge Game", width/2, titleTextX);
                     ctx.save();
                     playButton.draw();
                     howButton.draw();
                     gameControlsButton.draw();
+                    levelsButton.draw();
                     ctx.restore();
                 },
                 play: function() {
@@ -222,7 +256,7 @@
                     setBackgroundColor(color(0, 0, 0));
                     ctx.textAlign = "center";
                     ctx.fillStyle = "white";
-                    var textSize = initialNumberOfBlocks * 5;
+                    var textSize = initialNumberOfBlocks * 2.5;
                     if(textSize > 30) {textSize = 30};
                     ctx.font = textSize + "px sans-serif";
                     ctx.fillText(Math.round(score), width/2, 1.5 * textSize);
@@ -288,7 +322,7 @@
                     ctx.save();
                     ctx.textAlign = "center";
                     setBackgroundColor(color(255, 69, 69));
-                    var fontSize = initialNumberOfBlocks*2.4;
+                    var fontSize = initialNumberOfBlocks*2;
                     if(fontSize > 35) {fontSize = 35};
                     ctx.font = fontSize + "px sans-serif";
                     ctx.save();
@@ -316,6 +350,22 @@
                     ctx.restore();
                     
                 },
+                levelsPage1: function() {
+                    setBackgroundColor(color(255, 69, 69));
+                    levelOneButton.draw();
+                    levelTwoButton.draw();
+                    levelThreeButton.draw();
+                    levelFourButton.draw();
+                    levelFiveButton.draw();
+                    levelSixButton.draw();
+                    levelSevenButton.draw();
+                    levelEightButton.draw();
+                    levelNineButton.draw();
+                    backButton.draw();
+                },
+                levelsPage2: function() {
+                    
+                },
             };
             
             
@@ -325,6 +375,7 @@
                 requestAnimationFrame(draw);
             };
             requestAnimationFrame(draw);
+
             
             //Handling Mouse controls
             canvas.addEventListener("mousedown", function() {
@@ -363,6 +414,8 @@
                             scene = "how";
                         } else if(gameControlsButton.mouseIsInside(event)) {
                             scene = "gameControls"
+                        } else if(levelsButton.mouseIsInside(event)) {
+                            scene = "levelsPage1";      
                         }
                     } else if(scene === "how") {
                         if(backButton.mouseIsInside(event)) {
@@ -386,7 +439,7 @@
                             }
                             scene = "menu";
                         }
-                    }  else if (scene === "gameControls") {
+                    } else if (scene === "gameControls") {
                         if(backButton.mouseIsInside(event)) {
                             scene = "menu";
                         } else if (gameSpeedButton.mouseIsInside(event)) {
@@ -394,8 +447,10 @@
                         } else if (numberOfBlocksButton.mouseIsInside(event)) {
                             setNumberOfBlocks();
                         }
-                        
-                            
+                    }  else if(scene === "levelsPage1") {
+                        if(backButton.mouseIsInside(event)) {
+                            scene = "menu";
+                        }
                     };
             });
             
@@ -404,6 +459,9 @@
             // Handling key presses
             document.addEventListener("keydown", function(event) {
                 keysPressed[event.keyCode] = true;
+                if (event.keyCode === 39 || event.keyCode === 37) {
+                    event.preventDefault();
+                };
             });
             document.addEventListener("keyup", function(event) {
                 keysPressed[event.keyCode] = false;
@@ -411,3 +469,4 @@
         </script>
     </body>
 </html>
+
