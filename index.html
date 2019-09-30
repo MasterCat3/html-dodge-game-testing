@@ -5,7 +5,7 @@
 
 <!--
     Released on: April 30th 2017
-    Last Updated: September 25th 2019
+    Last Updated: September 29th 2019
     Improvements made since release: (
         Made logo shorter
         Made the x position of the player reset itself after the "Retry" button is pressed
@@ -219,9 +219,16 @@
                 },
                 play: function() {
                     ctx.save();
-                    ctx.textAlign = "center";
-                    ctx.font = "30px sans-serif";
                     setBackgroundColor(color(0, 0, 0));
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "white";
+                    var textSize = initialNumberOfBlocks * 2.5;
+                    if(textSize > 30) {textSize = 30};
+                    ctx.font = textSize + "px sans-serif";
+                    ctx.fillText(Math.round(score), width/2, 1.5 * textSize);
+                    ctx.fillStyle = "black";
+                    ctx.save();
+                    ctx.font = "30px sans-serif";
                     for(var i = 0; i < redBlocks.length; i++) {
                         ctx.save();
                         ctx.fillStyle = "red";
@@ -256,7 +263,7 @@
                     
                     if(new Date().getTime() >= now + 1000) {
                         now = new Date().getTime();
-                        score += gameSpeed/5;
+                        score += gameSpeed/6;
                     }
                     player.draw();
                     ctx.restore();
