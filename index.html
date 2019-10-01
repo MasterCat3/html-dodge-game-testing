@@ -298,9 +298,7 @@
                     if(new Date().getTime() >= now + 1000) {
                         now = new Date().getTime();
                         score += gameSpeed / 6;
-                        
-                        score = score * (numberOfBlocks / initialNumberOfBlocks);
-                    }
+                    };
                     player.draw();
                     ctx.restore();
                 },
