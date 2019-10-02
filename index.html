@@ -213,6 +213,60 @@
             };
             
             var level = 0;
+            var levelOne = function() {
+                level = 1;
+                gameSpeed = 3;
+                numberOfBlocks = initialNumberOfBlocks * 0.7;
+                scene = "play";
+            };
+            var levelTwo = function() {
+                level = 2;
+                gameSpeed = 4;
+                numberOfBlocks = initialNumberOfBlocks;
+                scene = "play";
+            };
+            var levelThree = function() {
+                level = 3;
+                gameSpeed = 6;
+                numberOfBlocks = initialNumberOfBlocks;
+                scene = "play";
+            };
+            var levelFour = function() {
+                level = 4;
+                gameSpeed = 6;
+                numberOfBlocks = initialNumberOfBlocks * 1.25;
+                scene = "play";
+            };
+            var levelFive = function() {
+                level = 5;
+                gameSpeed = 8;
+                numberOfBlocks = initialNumberOfBlocks;
+                scene = "play";
+            };
+            var levelSix = function() {
+                level = 6;
+                gameSpeed = 8;
+                numberOfBlocks = initialNumberOfBlocks * 1.25;
+                scene = "play";
+            };
+            var levelSeven = function() {
+                level = 7;
+                gameSpeed = 8;
+                numberOfBlocks = initialNumberOfBlocks * 1.5;
+                scene = "play";
+            };
+            var levelEight = function() {
+                level = 8;
+                gameSpeed = 10;
+                numberOfBlocks = initialNumberOfBlocks * 1.5;
+                scene = "play";
+            };
+            var levelNine = function() {
+                level = 9;
+                gameSpeed = 12;
+                numberOfBlocks = initialNumberOfBlocks * 2;
+                scene = "play";
+            }
             
             // Scenes
             var logoProgress = 0;
@@ -273,7 +327,7 @@
                         }
                         if(redBlocks[i].y >= height-40 && redBlocks[i].x >= player.x-40 && redBlocks[i].y <= height && redBlocks[i].x <= player.x+40) {
                             scene = "lose";
-                        }
+                        };
                         
                         ctx.fillRect(redBlocks[i].x-40, redBlocks[i].y-40, 40, 40);
                         ctx.restore();
@@ -295,10 +349,10 @@
                         }
                     };
                     
-                    if(new Date().getTime() >= now + 1000) {
+                    if(new Date().getTime() >= now + 1000 * initialNumberOfBlocks / numberOfBlocks) {
                         now = new Date().getTime();
-                        score += gameSpeed / 6;
-                    };
+                        score += gameSpeed/6;
+                    }
                     player.draw();
                     ctx.restore();
                 },
@@ -332,15 +386,18 @@
                     ctx.fillText("again. At least not until you clicked", width/2, height/2+fontSize*2.5);
                     ctx.fillText("that retry button...", width/2, height/2+fontSize*3.75);
                     ctx.fillText("Your score: " + Math.round(score), width/2, height/2+fontSize*5);
-                    ctx.fillText("You played the game at a speed of " + gameSpeed, width/2, height/2+fontSize*6.25)
-                    ctx.fillText(" and with " + numberOfBlocks + " blocks.", width/2, height/2+fontSize*7.75)
+                    if(level === 0) {
+                        ctx.fillText("You played the game at a speed of " + gameSpeed, width/2, height/2+fontSize*6.25);
+                        ctx.fillText(" and with " + numberOfBlocks + " blocks.", width/2, height/2+fontSize*7.75);
+                    } else {
+                        ctx.fillText("You played level " + level + ".", width/2, height/2+fontSize*6.25);
+                    }
                     ctx.restore();
                     retryButton.draw();
                     backButtonFromLoseScreen.draw();
                     ctx.restore();
                 },
                 gameControls: function() {
-                    // Temporary Debug Code
                     ctx.fillStyle = "blue"; ctx.font = "30px sans-serif"; ctx.fillText(numberOfBlocks, 100, 100);
                     ctx.save();
                     setBackgroundColor(color(255, 69, 69));
@@ -420,7 +477,7 @@
                     } else if(scene === "how") {
                         if(backButton.mouseIsInside(event)) {
                             scene = "menu";
-                        }
+                        };
                     } else if(scene === "lose") {
                         if(retryButton.mouseIsInside(event)) {
                             score = 0;
@@ -432,6 +489,13 @@
                             scene = "play";
                         } else if(backButtonFromLoseScreen.mouseIsInside(event)) {
                             score = 0;
+                            if(level != 0) {
+                                gameSpeed = 6;
+                                numberOfBlocks = initialNumberOfBlocks;
+                                level = 0;
+                            }
+                            gameSpeed = 6;
+                            numberOfBlocks = initialNumberOfBlocks;
                             player.x = width/2;
                             for(var i = 0; i < redBlocks.length; i++) {
                                 redBlocks[i].x = -50;
@@ -450,7 +514,26 @@
                     }  else if(scene === "levelsPage1") {
                         if(backButton.mouseIsInside(event)) {
                             scene = "menu";
-                        }
+                        };
+                        if(levelOneButton.mouseIsInside(event)) {
+                            levelOne();
+                        } else if(levelTwoButton.mouseIsInside(event)) {
+                            levelTwo();
+                        } else if(levelThreeButton.mouseIsInside(event)) {
+                            levelThree();
+                        } else if(levelFourButton.mouseIsInside(event)) {
+                            levelFour();
+                        } else if(levelFiveButton.mouseIsInside(event)) {
+                            levelFive();
+                        } else if(levelSixButton.mouseIsInside(event)) {
+                            levelSix();
+                        } else if(levelSevenButton.mouseIsInside(event)) {
+                            levelSeven();
+                        } else if(levelEightButton.mouseIsInside(event)) {
+                            levelEight();
+                        } else if(levelNineButton.mouseIsInside(event)) {
+                            levelNine();
+                        };
                     };
             });
             
