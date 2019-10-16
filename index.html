@@ -49,6 +49,20 @@
                     ctx.fillRect(0, 0, width, height);
                     ctx.fillStyle = fillStyle;
                 };
+                
+                CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                    if (w < 2 * r) r = w / 2;
+                    if (h < 2 * r) r = h / 2;
+                    this.beginPath();
+                    this.moveTo(x+r, y);
+                    this.arcTo(x+w, y,   x+w, y+h, r);
+                    this.arcTo(x+w, y+h, x,   y+h, r);
+                    this.arcTo(x,   y+h, x,   y,   r);
+                    this.arcTo(x,   y,   x+w, y,   r);
+                    this.closePath();
+                    return this;
+                };
+                
                 var rangedRandom = function(low, high) {
                     return Math.random() * (high - low) + low;
                 };
@@ -104,7 +118,7 @@
                     ctx.save();
                     ctx.textAlign = "center";
                     ctx.fillStyle = this.color;
-                    ctx.fillRect(this.x-this.width+(this.txt.length*5), this.y-this.height, this.width, this.height);
+                    ctx.roundRect(this.x-this.width+(this.txt.length*5), this.y-this.height, this.width, this.height, 5).fill();
                     ctx.font = "20px sans-serif";
                     ctx.fillStyle = this.txtcolor;
                     ctx.fillText(this.txt, this.x-(this.width/2)+(this.txt.length*5), this.y-(this.height/2));
